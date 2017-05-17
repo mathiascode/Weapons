@@ -38,11 +38,20 @@ function HandleWeaponsCommand(Split, Player)
 end
 
 function GetPlayerLookPos(Player)
-	local Tracer = cTracer(Player:GetWorld())
-	local EyePos = Vector3f(Player:GetEyePosition().x, Player:GetEyePosition().y, Player:GetEyePosition().z)
-	local EyeVector = Vector3f(Player:GetLookVector().x, Player:GetLookVector().y, Player:GetLookVector().z)
-	Tracer:Trace(EyePos, EyeVector, 100)
-	return Tracer.BlockHitPosition
+	local World = Player:GetWorld()
+	local Start = Player:GetEyePosition()
+	local End = Start + Player:GetLookVector() * 150
+	local Callbacks =
+	{
+		OnNextBlock = function(X, Y, Z, BlockType)
+			if BlockType ~= E_BLOCK_AIR then
+				HitCoords = {x = X, y = Y, z = Z}
+				return true
+			end
+		end
+	}
+	cLineBlockTracer:Trace(World, Callbacks, Start.x, Start.y, Start.z, End.x, End.y, End.z)
+	return HitCoords
 end
 
 function OnPlayerAnimation(Player, Animation)
@@ -51,7 +60,7 @@ function OnPlayerAnimation(Player, Animation)
 	local PZ = Player:GetPosZ()
 	local Weapon = Player:GetEquippedItem()
 	local World = Player:GetWorld()
-	if Weapon.m_ItemType == E_ITEM_IRON_HORSE_ARMOR and Weapon.m_CustomName == "§7Sniper" then
+	if Animation == 0 and Weapon.m_ItemType == E_ITEM_IRON_HORSE_ARMOR and Weapon.m_CustomName == "§7Sniper" then
 		World:CreateProjectile(PX, PY + 1.5, PZ, cProjectileEntity.pkSnowball, Player, Weapon, Player:GetLookVector() * 80)
 		World:BroadcastSoundEffect("block.piston.contract", PX, PY, PZ, 1.0, 63)
 		SniperOrigin[Player:GetUniqueID()] = true
@@ -91,7 +100,7 @@ function OnPlayerRightClick(Player, BlockX, BlockY, BlockZ, BlockFace, CursorX, 
 		end
 		return true
 	elseif Weapon.m_ItemType == E_ITEM_STICK and Weapon.m_CustomName == "§fLightning Stick" then
-		if LookPos.x == 0 and LookPos.y == 0 and LookPos.z == 0 then
+		if LookPos == nil then
 			World:CastThunderbolt(PX, PY, PZ)
 		else
 			World:CastThunderbolt(LookPos.x, LookPos.y, LookPos.z)
@@ -101,8 +110,8 @@ function OnPlayerRightClick(Player, BlockX, BlockY, BlockZ, BlockFace, CursorX, 
 end
 
 function OnProjectileHitEntity(ProjectileEntity, Entity)
-	if SniperOrigin[ProjectileEntity:GetCreatorName()] then
-		Entity:TakeDamage(dtArrow, Player, 18, 4)
+	if SniperOrigin[ProjectileEntity:GetCreatorUniqueID()] then
+		Entity:TakeDamage(dtArrow, etPlayer, 10, 3)
 		SniperOrigin[ProjectileEntity:GetCreatorUniqueID()] = nil
 	end
 end
