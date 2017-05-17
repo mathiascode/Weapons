@@ -41,6 +41,7 @@ function GetPlayerLookPos(Player)
 	local World = Player:GetWorld()
 	local Start = Player:GetEyePosition()
 	local End = Start + Player:GetLookVector() * 150
+	local HitCoords = nil
 	local Callbacks =
 	{
 		OnNextBlock = function(X, Y, Z, BlockType)
