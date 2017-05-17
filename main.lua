@@ -3,6 +3,7 @@ local SniperOrigin = {}
 
 function Initialize(Plugin)
 	Plugin:SetName(g_PluginInfo.Name)
+	Plugin:SetVersion(g_PluginInfo.Version)
 
 	cPluginManager:AddHook(cPluginManager.HOOK_PLAYER_RIGHT_CLICK, OnPlayerRightClick)
 	cPluginManager:AddHook(cPluginManager.HOOK_PLAYER_ANIMATION, OnPlayerAnimation)
@@ -11,7 +12,7 @@ function Initialize(Plugin)
 	dofile(cPluginManager:GetPluginsPath() .. "/InfoReg.lua")
 	RegisterPluginInfoCommands()
 
-	LOG("Initialised " .. Plugin:GetName())
+	LOG("Initialised " .. Plugin:GetName() .. " v." .. Plugin:GetVersion())
 	return true
 end
 
